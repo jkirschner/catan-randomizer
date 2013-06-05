@@ -169,7 +169,11 @@ HexTile.prototype.drawNumber = function() {
 	
 	drawingContext.font = "bold " + fontSizePt + "pt sans-serif";
 	drawingContext.textAlign = "center";
-	drawingContext.fillStyle = "#000000";
+	if ( (this.number == 6) || (this.number == 8) ) {
+		drawingContext.fillStyle = "#FF0000";
+	} else {
+		drawingContext.fillStyle = "#000000";
+	}
 	drawingContext.fillText(
 		this.number.toString(),
 		this.xCenter,
