@@ -35,12 +35,14 @@ function init() {
 	resizeCanvas();
 	
 	var cm = new CatanMap();
+	cm.draw();
 	
 }
 
 function CatanMap() {
 	
 	this.hexTiles = [];
+	this.coordToTile = {};
 	
 	var numTiles = 19;
 	var tileCoordinates = [
@@ -62,34 +64,108 @@ function CatanMap() {
 	// Handle desert(s)
 	
 	var desertHexTile = new HexTile();
-	
+	var newCoords = tileCoordinates.random(true);
 	desertHexTile.setCoordinate.apply(
 		desertHexTile,
-		tileCoordinates.random(true)
+		newCoords
 	);
 	desertHexTile.setResourceType("desert");
-	desertHexTile.draw();
+	this.hexTiles.push(desertHexTile);
+	this.coordToTile[newCoords.toString()] = desertHexTile;
+	
+	// Move all highly productive tile number (6 and 8) to the front
+	// of the tileNumber array
+	var highlyProductiveIdx = [];
+	highlyProductiveIdx = highlyProductiveIdx.concat(
+		tileNumber.indexOfArray(6),
+		tileNumber.indexOfArray(8)
+	);
+	for (var i = 0; i < highlyProductiveIdx.length; i += 1) {
+		tileNumber.swap(i,highlyProductiveIdx[i]);
+	}
 	
 	// Handle all other tiles
-	for (var i = 1; i < numTiles; i += 1) {
+	for (var i = 0; i < (numTiles - 1); i += 1) {
 		
 		var newHexTile = new HexTile();
-		
-		newHexTile.setCoordinate.apply(
-			newHexTile,
-			tileCoordinates.random(true)
-		);
-		
+		newHexTile.setNumber(tileNumber[i]);
 		newHexTile.setResourceType(tileTypes.random(true));
-		newHexTile.setNumber(tileNumber.random(true));
 		
-		newHexTile.draw();
+		var newCoords = [];
+		var valid;
 		
+		if ( newHexTile.isHighlyProductive() ) {
+			var tmpCoords = [];
+			do {
+				newCoords = tileCoordinates.random(true);
+				newHexTile.setCoordinate.apply(
+					newHexTile,
+					newCoords
+				);
+				invalid = this.hasHighlyProductiveNeighbors(newHexTile);
+				if (invalid) {
+					tmpCoords.push(newCoords);
+				}
+			} while ( invalid );
+			tileCoordinates = tileCoordinates.concat(tmpCoords);
+		} else {
+			newCoords = tileCoordinates.random(true);
+			newHexTile.setCoordinate.apply(
+				newHexTile,
+				newCoords
+			);
+		}
+		
+		this.hexTiles.push(newHexTile);
+		this.coordToTile[newCoords.toString()] = newHexTile;
+
 	}
 	
 }
+CatanMap.prototype.draw = function() {
+	
+	for (var i = 0; i < this.hexTiles.length; i += 1) {
+		this.hexTiles[i].draw();
+	}
+	
+}
+CatanMap.prototype.getAdjacentTiles = function(tile) {
+	
+	var tileX = tile.gridX;
+	var tileY = tile.gridY;
+	
+	var adjTiles = [];
+	
+	// (+0,+2), (+2,+1), (+2,-1), (+0,-2), (-2,-1), (-2,1)
+	xshift = [0, 2, 2, 0, -2, -2];
+	yshift = [2, 1, -1, -2, -1, 1];
+	
+	for (var i = 0; i < 6; i += 1) {
+		var adjTile = this.coordToTile[
+			[tileX + xshift[i], tileY + yshift[i]].toString()
+		];
+		// Will be null if no hex tile found at that coordinate
+		if (adjTile) {
+			adjTiles.push(adjTile);
+		}
+	}
+	
+	return adjTiles;
+	
+}
+CatanMap.prototype.hasHighlyProductiveNeighbors = function(tile) {
+	var adjacentTiles = this.getAdjacentTiles(tile);
+	for (var i = 0; i < adjacentTiles.length; i += 1) {
+		if ( adjacentTiles[i].isHighlyProductive() ) {
+			return true;
+		}
+	}
+	return false;
+}
 
 function HexTile() {
+	this.gridX;
+	this.gridY;
 	this.xCenter;
 	this.yCenter;
 	this.resourceType = "none";
@@ -108,12 +184,17 @@ HexTile.prototype.setResourceType = function(resourceType) {
 		console.log("Unrecognized resource type:",resourceType);
 	}
 }
+HexTile.prototype.isHighlyProductive = function() {
+	return ( (this.number == 6) || (this.number == 8) );
+}
 HexTile.prototype.setNumber = function(number) {
 	this.number = number;
 }
 HexTile.prototype.setCoordinate = function(x,y) {
 	this.xCenter = canvasCenterX + dx*x;
 	this.yCenter = canvasCenterY + dy*y;
+	this.gridX = x;
+	this.gridY = y;
 }
 HexTile.prototype.draw = function() {
 	this.drawBase();
@@ -169,7 +250,7 @@ HexTile.prototype.drawNumber = function() {
 	
 	drawingContext.font = "bold " + fontSizePt + "pt sans-serif";
 	drawingContext.textAlign = "center";
-	if ( (this.number == 6) || (this.number == 8) ) {
+	if ( this.isHighlyProductive() ) {
 		drawingContext.fillStyle = "#FF0000";
 	} else {
 		drawingContext.fillStyle = "#000000";
@@ -192,6 +273,26 @@ Array.prototype.random = function(removeElem) {
 }
 Array.prototype.copy = function() {
 	return this.slice();
+}
+Array.prototype.indexOfArray = function(val) {
+	var arr = [];
+	var sIdx = 0;
+	var tmpCopy = this.copy();
+	do {
+		var rIdx = tmpCopy.indexOf(val);
+		var valid = (rIdx >= 0);
+		if (valid) {
+			tmpCopy.splice(0, rIdx + 1);
+			arr.push(sIdx + rIdx);
+			sIdx += rIdx + 1;
+		}
+	} while (valid);
+	return arr;
+}
+Array.prototype.swap = function(idx1, idx2) {
+	var tmp = this[idx1];
+	this[idx1] = this[idx2];
+	this[idx2] = tmp;
 }
 
 function resizeCanvas()
