@@ -8,22 +8,23 @@ var canvasCenterY;
 
 // ----- Hexagon drawing parameters -----
 
-var size = 100;
+var size = 50;
 var defaultFillStyle = "#ffffff";
 var strokeStyle = "#000000";
 var lineWidth = 3;
 var resourceTypeToColor = {
-	"ore": "#000000",
-	"clay": "#ff0000",
-	"wool": "#008800",
-	"wood": "#00ff00",
-	"wheat": "#555500",
+	"ore": "#363636",
+	"clay": "#E83200",
+	"wool": "#98E82E",
+	"wood": "#0A7300",
+	"wheat": "#E0E000",
+	"desert": "#F2F0A0",
 	"none": "#ffffff"
 };
 
 // ----- Grid layout globals -----
 
-var dx = size * Math.cos(Math.PI/3);
+var dx = size * (1 + Math.cos(Math.PI/3)) / 2;
 var dy = size * Math.sin(Math.PI/3);
 
 // Initialize page.
@@ -33,20 +34,66 @@ function init() {
 	drawingContext = maincanvas.getContext('2d');
 	resizeCanvas();
 	
+	/*
 	h1 = new HexTile();
-	h1.setCenter(100,100);
+	h1.setCoordinate(0,0);
 	h1.setResourceType("clay");
 	h1.draw();
 	
 	h2 = new HexTile();
-	h2.setCenter(100,100+2*dy);
+	h2.setCoordinate(0,2);
 	h2.setResourceType("wool");
 	h2.draw();
 	
 	h3 = new HexTile();
-	h3.setCenter(200+dx,100+dy);
-	h3.setResourceType("wheat");
+	h3.setCoordinate(2,1);
+	h3.setResourceType("desert");
 	h3.draw();
+	*/
+	
+	var cm = new CatanMap();
+	
+}
+
+function CatanMap() {
+	
+	this.hexTiles = [];
+	
+	var numTiles = 19;
+	var tileCoordinates = [
+		[-4,2],[-4,0],[-4,-2],
+		[-2,3],[-2,1],[-2,-1],[-2,-3],
+		[0,4],[0,2],[0,0],[0,-2],[0,-4],
+		[2,3],[2,1],[2,-1],[2,-3],
+		[4,2],[4,0],[4,-2]
+	];
+	var tileNumber = [2,3,3,4,4,5,5,6,6,7,8,8,9,9,10,10,11,11,12];
+	var tileTypes = [
+		"wood","wood","wood","wood",
+		"clay","clay","clay",
+		"wool","wool","wool","wool",
+		"ore","ore","ore",
+		"wheat","wheat","wheat","wheat",
+		"desert"
+	];
+	
+	for (var i = 0; i < numTiles; i += 1) {
+		
+		var newHexTile = new HexTile();
+		
+		newHexTile.setCoordinate.apply(
+			newHexTile,
+			tileCoordinates.shift()
+		);
+		
+		newHexTile.setResourceType(tileTypes.random(true));
+		var newTileNumber = tileNumber.random(true);
+		
+		newHexTile.draw();
+		
+		console.log(i,newHexTile.resourceType,newHexTile.fillStyle,newTileNumber);
+		console.log(newHexTile.xCenter,newHexTile.yCenter);
+	}
 	
 }
 
@@ -65,15 +112,15 @@ HexTile.prototype.setResourceType = function(resourceType) {
 		this.resourceType = resourceType;
 		this.fillStyle = this.hexColorMap[resourceType];
 	} else {
-		console.log("Unrecognized resource type.");
+		console.log("Unrecognized resource type:",resourceType);
 	}
 }
 HexTile.prototype.setSize = function(size) {
 	this.size = size;
 }
-HexTile.prototype.setCenter = function(x,y) {
-	this.xCenter = x;
-	this.yCenter = y;
+HexTile.prototype.setCoordinate = function(x,y) {
+	this.xCenter = canvasCenterX + dx*x;
+	this.yCenter = canvasCenterY + dy*y;
 }
 HexTile.prototype.draw = function() {
 	
@@ -119,10 +166,10 @@ Array.prototype.copy = function() {
 
 function resizeCanvas()
 {
-	$(maincanvas).attr("width", 600);
-	$(maincanvas).attr("height", 400);
-	//$(maincanvas).attr("width", $(window).width());
-	//$(maincanvas).attr("height", $(window).height());
+	//$(maincanvas).attr("width", 600);
+	//$(maincanvas).attr("height", 400);
+	$(maincanvas).attr("width", $(window).width());
+	$(maincanvas).attr("height", $(window).height());
 	canvasCenterY = maincanvas.height/2;
 	canvasCenterX = maincanvas.width/2;
 }
