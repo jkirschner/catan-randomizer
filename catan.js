@@ -34,23 +34,6 @@ function init() {
 	drawingContext = maincanvas.getContext('2d');
 	resizeCanvas();
 	
-	/*
-	h1 = new HexTile();
-	h1.setCoordinate(0,0);
-	h1.setResourceType("clay");
-	h1.draw();
-	
-	h2 = new HexTile();
-	h2.setCoordinate(0,2);
-	h2.setResourceType("wool");
-	h2.draw();
-	
-	h3 = new HexTile();
-	h3.setCoordinate(2,1);
-	h3.setResourceType("desert");
-	h3.draw();
-	*/
-	
 	var cm = new CatanMap();
 	
 }
@@ -67,32 +50,41 @@ function CatanMap() {
 		[2,3],[2,1],[2,-1],[2,-3],
 		[4,2],[4,0],[4,-2]
 	];
-	var tileNumber = [2,3,3,4,4,5,5,6,6,7,8,8,9,9,10,10,11,11,12];
+	var tileNumber = [2,3,3,4,4,5,5,6,6,8,8,9,9,10,10,11,11,12];
 	var tileTypes = [
 		"wood","wood","wood","wood",
 		"clay","clay","clay",
 		"wool","wool","wool","wool",
 		"ore","ore","ore",
 		"wheat","wheat","wheat","wheat",
-		"desert"
 	];
 	
-	for (var i = 0; i < numTiles; i += 1) {
+	// Handle desert(s)
+	
+	var desertHexTile = new HexTile();
+	
+	desertHexTile.setCoordinate.apply(
+		desertHexTile,
+		tileCoordinates.random(true)
+	);
+	desertHexTile.setResourceType("desert");
+	desertHexTile.draw();
+	
+	// Handle all other tiles
+	for (var i = 1; i < numTiles; i += 1) {
 		
 		var newHexTile = new HexTile();
 		
 		newHexTile.setCoordinate.apply(
 			newHexTile,
-			tileCoordinates.shift()
+			tileCoordinates.random(true)
 		);
 		
 		newHexTile.setResourceType(tileTypes.random(true));
-		var newTileNumber = tileNumber.random(true);
+		newHexTile.setNumber(tileNumber.random(true));
 		
 		newHexTile.draw();
 		
-		console.log(i,newHexTile.resourceType,newHexTile.fillStyle,newTileNumber);
-		console.log(newHexTile.xCenter,newHexTile.yCenter);
 	}
 	
 }
@@ -102,6 +94,7 @@ function HexTile() {
 	this.yCenter;
 	this.resourceType = "none";
 	this.fillStyle = defaultFillStyle;
+	this.number;
 }
 HexTile.prototype.strokeStyle = strokeStyle;
 HexTile.prototype.lineWidth = lineWidth;
@@ -115,14 +108,21 @@ HexTile.prototype.setResourceType = function(resourceType) {
 		console.log("Unrecognized resource type:",resourceType);
 	}
 }
-HexTile.prototype.setSize = function(size) {
-	this.size = size;
+HexTile.prototype.setNumber = function(number) {
+	this.number = number;
 }
 HexTile.prototype.setCoordinate = function(x,y) {
 	this.xCenter = canvasCenterX + dx*x;
 	this.yCenter = canvasCenterY + dy*y;
 }
 HexTile.prototype.draw = function() {
+	this.drawBase();
+	// Don't draw number if desert
+	if (this.number) {
+		this.drawNumber();
+	}
+}
+HexTile.prototype.drawBase = function() {
 	
 	drawingContext.strokeStyle = this.strokeStyle;
 	drawingContext.lineWidth = this.lineWidth;
@@ -149,6 +149,32 @@ HexTile.prototype.draw = function() {
 	
 	drawingContext.fill();
 	drawingContext.stroke();
+	
+}
+HexTile.prototype.drawNumber = function() {
+
+	drawingContext.fillStyle = "#FFFFFF";
+	drawingContext.strokeStyle = "#000000";
+	drawingContext.lineWidth = 3;
+	
+	drawingContext.beginPath();
+	drawingContext.arc(this.xCenter, this.yCenter, 0.375 * this.size,
+		0, 2 * Math.PI, false);
+	drawingContext.closePath();
+	
+	drawingContext.fill();
+	drawingContext.stroke();
+	
+	var fontSizePt = Math.ceil(30/40*(.45*this.size-8)+6);
+	
+	drawingContext.font = "bold " + fontSizePt + "pt sans-serif";
+	drawingContext.textAlign = "center";
+	drawingContext.fillStyle = "#000000";
+	drawingContext.fillText(
+		this.number.toString(),
+		this.xCenter,
+		this.yCenter + Math.ceil( 0.85 * fontSizePt/2 )
+	);
 	
 }
 
