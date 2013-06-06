@@ -8,7 +8,9 @@ var canvasCenterY;
 
 // ----- Hexagon drawing parameters -----
 
-var size = 80;
+var mapStyle = "retro";
+
+var size = 60;
 var defaultFillStyle = "#ffffff";
 var strokeStyle = "#000000";
 var lineWidth = 3;
@@ -17,71 +19,97 @@ var resourceTypeToColor = {
 	"clay": "#E83200",
 	"wool": "#98E82E",
 	"wood": "#0A7300",
-	"wheat": "#E0E000",
+	"grain": "#E0E000",
 	"desert": "#F2F0A0",
 	"none": "#ffffff"
 };
-resourceTypeToColor = {
-	"ore": "rgba(50,50,50,.5)",
-	"clay": "rgba(50,50,50,.5)",
-	"wool": "rgba(50,50,50,.5)",
-	"wood": "rgba(50,50,50,.5)",
-	"wheat": "rgba(50,50,50,.5)",
-	"desert": "rgba(50,50,50,.5)",
-	"none": "rgba(50,50,50,.5)",
-}
+var resourceTypeToImageCanvas = {
+	"ore": null,
+	"clay": null,
+	"wool": null,
+	"wood": null,
+	"grain": null,
+	"desert": null
+};
+
+//var allImagesLoaded = false;
 
 // ----- Grid layout globals -----
 
 var dx = size * (1 + Math.cos(Math.PI/3)) / 2;
 var dy = size * Math.sin(Math.PI/3);
 
-
-
-
-
-function preloadimages(arr){
+function preloadImages(arr, callback){
 	//http://www.javascriptkit.com/javatutors/preloadimagesplus.shtml
 	
-    var newimages=[], loadedimages=0
-    var postaction=function(){}
-    var arr=(typeof arr!="object")? [arr] : arr
+    var newimages=[], loadedimages=0;
+    var postaction=function(){};
+    var arr=(typeof arr!="object")? [arr] : arr;
     function imageloadpost(){
-        loadedimages++
+        loadedimages++;
         if (loadedimages==arr.length){
-            postaction(newimages) //call postaction and pass in newimages array as parameter
+            callback(newimages); //call postaction and pass in newimages array as parameter
         }
     }
     for (var i=0; i<arr.length; i++){
-        newimages[i]=new Image()
-        newimages[i].src=arr[i]
+        newimages[i]=new Image();
+        newimages[i].src=arr[i];
         newimages[i].onload=function(){
-            imageloadpost()
+            imageloadpost();
         }
         newimages[i].onerror=function(){
-            imageloadpost()
+            imageloadpost();
         }
     }
-    return { //return blank object with done() method
-        done:function(f){
-            postaction=f || postaction //remember user defined callback functions to be called when images load
-        }
-    }
+
 }
 
+function loadImages(callback) {
 
-
-
-
+	var rTypes = [];
+	var imgPaths = [];
+	for (var key in resourceTypeToImageCanvas) {
+		rTypes.push(key);
+		imgPaths.push("images/"+key+".png");
+	}
+	
+	preloadImages(imgPaths, function(images) {
+		
+		for (var i = 0; i < imgPaths.length; i += 1) {
+			//resourceTypeToImage[ rTypes[i] ] = images[i];
+			var img = images[i];
+			var imgCanvas = document.createElement("canvas");
+			var imgContext = imgCanvas.getContext("2d");
+			
+			imgCanvas.width = img.width;
+			imgCanvas.height = img.height;
+			imgContext.drawImage(img, 0, 0);
+			
+			resourceTypeToImageCanvas[ rTypes[i] ] = imgCanvas;
+		}
+		
+		callback();
+		
+	});
+	
+}
 
 // Initialize page.
 function init() {
 	
-	maincanvas = $('#maincanvas')[0];
-	drawingContext = maincanvas.getContext('2d');
-	resizeCanvas();
+	// Load necessary image resources.
+	loadImages(function() {
+		// Get canvas context and re-size canvas.
+		maincanvas = $('#maincanvas')[0];
+		drawingContext = maincanvas.getContext('2d');
+		resizeCanvas();
+		
+		var cm = new CatanMap();
+		cm.draw();
+	});
 	
-	preloadimages(['grain.png']).done(function(images){
+	/*
+	preloadImages(['images/desert.png'], function(images){
 		var img = images[0];
 	
 		var canvasCopy = document.createElement("canvas");
@@ -99,14 +127,11 @@ function init() {
 			2*size,
 			2*dy
 		);
-		console.log("Height: "+img.height*ratio+". Width: "+img.width*ratio);
-		console.log(dx,dy);
 		
 		var cm = new CatanMap();
 		cm.draw();
-	})
-	
-	
+	});
+	*/
 	
 }
 
@@ -129,7 +154,7 @@ function CatanMap() {
 		"clay","clay","clay",
 		"wool","wool","wool","wool",
 		"ore","ore","ore",
-		"wheat","wheat","wheat","wheat",
+		"grain","grain","grain","grain",
 	];
 	
 	// Handle desert(s)
@@ -275,10 +300,16 @@ HexTile.prototype.draw = function() {
 	}
 }
 HexTile.prototype.drawBase = function() {
-	
-	drawingContext.strokeStyle = this.strokeStyle;
+
 	drawingContext.lineWidth = this.lineWidth;
-	drawingContext.fillStyle = this.fillStyle;
+	
+	if (mapStyle == "retro") {
+		drawingContext.fillStyle = "rgba(255,255,255,0)";
+		drawingContext.strokeStyle = "#FAEB96";
+	} else {
+		drawingContext.fillStyle = this.fillStyle;
+		drawingContext.strokeStyle = this.strokeStyle;
+	}
 	
 	var angleOffset = Math.PI / 6;
 	
@@ -298,9 +329,23 @@ HexTile.prototype.drawBase = function() {
 		);
 	}
 	drawingContext.closePath();
-	
 	drawingContext.fill();
 	drawingContext.stroke();
+	
+	if (mapStyle == "retro") {
+		
+		var imgCanvas = resourceTypeToImageCanvas[this.resourceType];
+		
+		drawingContext.drawImage(
+			imgCanvas,
+			0, 0, imgCanvas.width, imgCanvas.height, 
+			this.xCenter - size,
+			this.yCenter - dy,
+			2*size,
+			2*dy
+		);
+		
+	}
 	
 }
 HexTile.prototype.drawNumber = function() {
