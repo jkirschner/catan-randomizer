@@ -66,9 +66,9 @@ function preloadImages(arr, callback){
 
 function init_test() {
 
-	var canvas = document.createElement("canvas");
+	/*var canvas = document.createElement("canvas");
 	canvas.id = "map-canvas";
-	document.getElementById('map-container').appendChild(canvas); 
+	document.getElementById('map-container').appendChild(canvas); */
 	
 }
 
