@@ -108,31 +108,6 @@ function init() {
 		cm.draw();
 	});
 	
-	/*
-	preloadImages(['images/desert.png'], function(images){
-		var img = images[0];
-	
-		var canvasCopy = document.createElement("canvas");
-		var copyContext = canvasCopy.getContext("2d");
-		
-		var ratio = 0.32;
-		
-		canvasCopy.width = img.width;
-		canvasCopy.height = img.height;
-		copyContext.drawImage(img, 0, 0);
-		
-		drawingContext.drawImage(canvasCopy, 0, 0, canvasCopy.width, canvasCopy.height, 
-			canvasCenterX - size,
-			canvasCenterY - dy,
-			2*size,
-			2*dy
-		);
-		
-		var cm = new CatanMap();
-		cm.draw();
-	});
-	*/
-	
 }
 
 function CatanMap() {
@@ -300,13 +275,13 @@ HexTile.prototype.draw = function() {
 	}
 }
 HexTile.prototype.drawBase = function() {
-
-	drawingContext.lineWidth = this.lineWidth;
 	
 	if (mapStyle == "retro") {
+		drawingContext.lineWidth = 10;
 		drawingContext.fillStyle = "rgba(255,255,255,0)";
 		drawingContext.strokeStyle = "#FAEB96";
 	} else {
+		drawingContext.lineWidth = this.lineWidth;
 		drawingContext.fillStyle = this.fillStyle;
 		drawingContext.strokeStyle = this.strokeStyle;
 	}
