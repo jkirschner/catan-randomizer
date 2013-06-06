@@ -8,7 +8,7 @@ var canvasCenterY;
 
 // ----- Hexagon drawing parameters -----
 
-var size = 50;
+var size = 80;
 var defaultFillStyle = "#ffffff";
 var strokeStyle = "#000000";
 var lineWidth = 3;
@@ -21,11 +21,58 @@ var resourceTypeToColor = {
 	"desert": "#F2F0A0",
 	"none": "#ffffff"
 };
+resourceTypeToColor = {
+	"ore": "rgba(50,50,50,.5)",
+	"clay": "rgba(50,50,50,.5)",
+	"wool": "rgba(50,50,50,.5)",
+	"wood": "rgba(50,50,50,.5)",
+	"wheat": "rgba(50,50,50,.5)",
+	"desert": "rgba(50,50,50,.5)",
+	"none": "rgba(50,50,50,.5)",
+}
 
 // ----- Grid layout globals -----
 
 var dx = size * (1 + Math.cos(Math.PI/3)) / 2;
 var dy = size * Math.sin(Math.PI/3);
+
+
+
+
+
+function preloadimages(arr){
+	//http://www.javascriptkit.com/javatutors/preloadimagesplus.shtml
+	
+    var newimages=[], loadedimages=0
+    var postaction=function(){}
+    var arr=(typeof arr!="object")? [arr] : arr
+    function imageloadpost(){
+        loadedimages++
+        if (loadedimages==arr.length){
+            postaction(newimages) //call postaction and pass in newimages array as parameter
+        }
+    }
+    for (var i=0; i<arr.length; i++){
+        newimages[i]=new Image()
+        newimages[i].src=arr[i]
+        newimages[i].onload=function(){
+            imageloadpost()
+        }
+        newimages[i].onerror=function(){
+            imageloadpost()
+        }
+    }
+    return { //return blank object with done() method
+        done:function(f){
+            postaction=f || postaction //remember user defined callback functions to be called when images load
+        }
+    }
+}
+
+
+
+
+
 
 // Initialize page.
 function init() {
@@ -34,8 +81,32 @@ function init() {
 	drawingContext = maincanvas.getContext('2d');
 	resizeCanvas();
 	
-	var cm = new CatanMap();
-	cm.draw();
+	preloadimages(['grain.png']).done(function(images){
+		var img = images[0];
+	
+		var canvasCopy = document.createElement("canvas");
+		var copyContext = canvasCopy.getContext("2d");
+		
+		var ratio = 0.32;
+		
+		canvasCopy.width = img.width;
+		canvasCopy.height = img.height;
+		copyContext.drawImage(img, 0, 0);
+		
+		drawingContext.drawImage(canvasCopy, 0, 0, canvasCopy.width, canvasCopy.height, 
+			canvasCenterX - size,
+			canvasCenterY - dy,
+			2*size,
+			2*dy
+		);
+		console.log("Height: "+img.height*ratio+". Width: "+img.width*ratio);
+		console.log(dx,dy);
+		
+		var cm = new CatanMap();
+		cm.draw();
+	})
+	
+	
 	
 }
 
