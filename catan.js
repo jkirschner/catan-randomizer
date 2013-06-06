@@ -10,7 +10,7 @@ var canvasCenterY;
 
 var mapStyle = "retro";
 
-var size = 60;
+var size = 80;
 var defaultFillStyle = "#ffffff";
 var strokeStyle = "#000000";
 var lineWidth = 3;
@@ -329,8 +329,6 @@ HexTile.prototype.drawBase = function() {
 		);
 	}
 	drawingContext.closePath();
-	drawingContext.fill();
-	drawingContext.stroke();
 	
 	if (mapStyle == "retro") {
 		
@@ -346,6 +344,9 @@ HexTile.prototype.drawBase = function() {
 		);
 		
 	}
+	
+	drawingContext.fill();
+	drawingContext.stroke();
 	
 }
 HexTile.prototype.drawNumber = function() {
