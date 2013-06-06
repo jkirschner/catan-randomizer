@@ -100,9 +100,9 @@ function init() {
 	// Load necessary image resources.
 	loadImages(function() {
 		// Get canvas context and re-size canvas.
-		maincanvas = $('#maincanvas')[0];
+		maincanvas = $('#map-canvas')[0];
 		drawingContext = maincanvas.getContext('2d');
-		resizeCanvas();
+		//resizeCanvas();
 		
 		var cm = new CatanMap();
 		cm.draw();

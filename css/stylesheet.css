@@ -1,0 +1,30 @@
+#content-wrapper {
+   width:100%;
+   margin:0 auto;
+   position:relative;
+}
+#content-left {
+    position:absolute;
+    top:0;
+    left:0;
+    width:300px;
+    text-align:center;
+}
+#content-right {
+    position:absolute;
+    top:0;
+    left:300px;
+}
+button#gen-map-button {
+	width:150px;
+}
+/*
+h1#title {
+	text-align:center;
+}
+*/
+/*canvas#maincanvas{
+	position: absolute;
+}
+body, html, canvas { margin: 0; padding: 0; }
+*/

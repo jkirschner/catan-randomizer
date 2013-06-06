@@ -2,25 +2,30 @@
 
 <head>
 	<title>Catan Randomizer</title>
+	<link rel="stylesheet" href="css/stylesheet.css" type="text/css">  
 	<script src="jquery.min.js" type="text/javascript"></script>
 	<script type="text/javascript" language="javascript">
 		$(document).ready(function() {
 			init();
 		});
 	</script>
-	<style>
-		canvas#maincanvas{
-			position: absolute;
-		}
-		body, html, canvas { margin: 0; padding: 0; }
-	</style>
 	<script src="catan.js" type="text/javascript"></script>
 </head>
 
 <body>
-  
-	<canvas id="maincanvas"></canvas>
-  
+	<div id="content-wrapper">
+		<div id="content-left">
+		
+			<h1 id="title">Catan Map Generator</h1>
+			<button id="gen-map-button" type="button" disabled="true">
+				Loading resources...
+			</button>
+		
+		</div>
+		<div id="content-right">
+			<canvas id="map-canvas"></canvas>
+		</div>
+	</div>
 </body>
 
 </html>
