@@ -1,22 +1,35 @@
 #content-wrapper {
    width:100%;
+   height:100%;
    margin:0 auto;
    position:relative;
 }
 #content-left {
-    position:absolute;
+    /*position:absolute;
     top:0;
     left:0;
-    width:300px;
+    width:300px;*/
     text-align:center;
+    float:left;
+    width:300px;
 }
 #content-right {
-    position:absolute;
+    /*position:absolute;
     top:0;
-    left:300px;
+    left:300px;*/
+    margin-left:300px;
+    height:100%;
+}
+#map-container {
+	width:100%;
+	height:100%;
 }
 button#gen-map-button {
 	width:150px;
+}
+canvas#map-canvas {
+	width:100%;
+	height:100%;
 }
 /*
 h1#title {
@@ -26,5 +39,10 @@ h1#title {
 /*canvas#maincanvas{
 	position: absolute;
 }
-body, html, canvas { margin: 0; padding: 0; }
 */
+body, html, canvas {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+}
