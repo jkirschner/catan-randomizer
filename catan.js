@@ -39,6 +39,90 @@ var resourceTypeToImageCanvas = {
 var dx = size * (1 + Math.cos(Math.PI/3)) / 2;
 var dy = size * Math.sin(Math.PI/3);
 
+// ----- Map definition globals -----
+
+var catanMap = new CatanMap();
+
+var normalMap = new MapDefinition();
+normalMap.resourceDict = {
+	"desert": 1,
+	"wood": 4,
+	"clay": 3,
+	"wool": 4,
+	"grain": 4,
+	"ore": 3
+};
+normalMap.numberDict = {
+	2: 1,
+	3: 2,
+	4: 2,
+	5: 2,
+	6: 2,
+	8: 2,
+	9: 2,
+	10: 2,
+	11: 2,
+	12: 1
+}
+normalMap.coordinatesArray = [
+	[-4,2],[-4,0],[-4,-2],
+	[-2,3],[-2,1],[-2,-1],[-2,-3],
+	[0,4],[0,2],[0,0],[0,-2],[0,-4],
+	[2,3],[2,1],[2,-1],[2,-3],
+	[4,2],[4,0],[4,-2]
+];
+
+var extendedMap = new MapDefinition();
+extendedMap.resourceDict = {
+	"desert": 2,
+	"wood": 6,
+	"clay": 5,
+	"wool": 6,
+	"grain": 6,
+	"ore": 5
+}
+extendedMap.numberDict = {
+	2: 2,
+	3: 3,
+	4: 3,
+	5: 3,
+	6: 3,
+	8: 3,
+	9: 3,
+	10: 3,
+	11: 3,
+	12: 2
+}
+extendedMap.coordinatesArray = [
+	[-6,2],[-6,0],[-6,-2],
+	[-4,3],[-4,1],[-4,-1],[-4,-3],
+	[-2,4],[-2,2],[-2,0],[-2,-2],[-2,-4],
+	[0,5],[0,3],[0,1],[0,-1],[0,-3],[0,-5],
+	[2,4],[2,2],[2,0],[2,-2],[2,-4],
+	[4,3],[4,1],[4,-1],[4,-3],
+	[6,2],[6,0],[6,-2]
+];
+
+// ----- FUNCTIONS -----
+
+window.onresize = function(event) {
+	sizeCanvas();
+	catanMap.draw();
+}
+
+function init() {
+
+	loadImages(function() {
+		var button = $('button#gen-map-button')[0];
+		$(button).click(generate);
+		button.disabled = false;
+		button.innerHTML = "Click to generate.";
+	});
+	
+	addCanvas();
+	
+}
+
 function preloadImages(arr, callback){
 	//http://www.javascriptkit.com/javatutors/preloadimagesplus.shtml
 	
@@ -62,19 +146,6 @@ function preloadImages(arr, callback){
         }
     }
 
-}
-
-function init() {
-
-	loadImages(function() {
-		var button = $('button#gen-map-button')[0];
-		$(button).click(generate);
-		button.disabled = false;
-		button.innerHTML = "Click to generate.";
-	});
-	
-	addCanvas();
-	
 }
 
 function loadImages(callback) {
@@ -107,106 +178,147 @@ function loadImages(callback) {
 	
 }
 
-// Initialize page.
 function generate() {
 	
-	var cm = new CatanMap();
-	cm.draw();
+	catanMap.defineMap(extendedMap);
+	catanMap.generate();
+	catanMap.draw();
 	
-	window.onresize = function(event) {
-		sizeCanvas();
-		cm.draw();
+}
+
+function MapDefinition() {
+	this.resourceDict = null;
+	this.numberDict = null;
+	this.coordinatesArray = null;
+}
+MapDefinition.prototype.checkValidity = function() {
+	var cArrLen = this.coordinatesArray.length;
+	var rDictLen = this.sumDictVals(this.resourceDict);
+	var nDictLen = this.sumDictVals(this.numberDict);
+	var numDeserts = this.resourceDict["desert"];
+	
+	return (cArrLen == rDictLen) && (rDictLen == (nDictLen + numDeserts));
+}
+MapDefinition.prototype.sumDictVals = function(dict) {
+	var sum = 0;
+	for (var key in dict) {
+		sum += dict[key];
 	}
-	
+	return sum;
 }
 
 function CatanMap() {
 	
-	this.hexTiles = [];
+	this.mapDefinition = null;
+	this.hexTiles = null;
 	this.coordToTile = {};
 	
-	var numTiles = 19;
-	var tileCoordinates = [
-		[-4,2],[-4,0],[-4,-2],
-		[-2,3],[-2,1],[-2,-1],[-2,-3],
-		[0,4],[0,2],[0,0],[0,-2],[0,-4],
-		[2,3],[2,1],[2,-1],[2,-3],
-		[4,2],[4,0],[4,-2]
-	];
-	var tileNumber = [2,3,3,4,4,5,5,6,6,8,8,9,9,10,10,11,11,12];
-	var tileTypes = [
-		"wood","wood","wood","wood",
-		"clay","clay","clay",
-		"wool","wool","wool","wool",
-		"ore","ore","ore",
-		"grain","grain","grain","grain",
-	];
-	
-	// Handle desert(s)
-	
-	var desertHexTile = new HexTile();
-	var newCoords = tileCoordinates.random(true);
-	desertHexTile.setCoordinate.apply(
-		desertHexTile,
-		newCoords
-	);
-	desertHexTile.setResourceType("desert");
-	this.hexTiles.push(desertHexTile);
-	this.coordToTile[newCoords.toString()] = desertHexTile;
-	
-	// Move all highly productive tile number (6 and 8) to the front
-	// of the tileNumber array
-	var highlyProductiveIdx = [];
-	highlyProductiveIdx = highlyProductiveIdx.concat(
-		tileNumber.indexOfArray(6),
-		tileNumber.indexOfArray(8)
-	);
-	for (var i = 0; i < highlyProductiveIdx.length; i += 1) {
-		tileNumber.swap(i,highlyProductiveIdx[i]);
+}
+CatanMap.prototype.defineMap = function(mapDefinition) {
+	if (mapDefinition.checkValidity()) {
+		this.mapDefinition = mapDefinition;
+	} else {
+		console.log("Invalid map definition.");
 	}
+}
+CatanMap.prototype.generate = function() {
 	
-	// Handle all other tiles
-	for (var i = 0; i < (numTiles - 1); i += 1) {
+	if (this.mapDefinition) {
 		
-		var newHexTile = new HexTile();
-		newHexTile.setNumber(tileNumber[i]);
-		newHexTile.setResourceType(tileTypes.random(true));
+		this.hexTiles = [];
 		
-		var newCoords = [];
-		var valid;
+		var numTiles = this.mapDefinition.coordinatesArray.length;
 		
-		if ( newHexTile.isHighlyProductive() ) {
-			var tmpCoords = [];
-			do {
+		var tileCoordinates = this.mapDefinition.coordinatesArray.copy();
+		
+		var tileNumbers = [];
+		for (var key in this.mapDefinition.numberDict) {
+			for (var i = 0; i < this.mapDefinition.numberDict[key]; i += 1) {
+				tileNumbers.push(key);
+			}
+		}
+		
+		var tileTypes = [];
+		for (var key in this.mapDefinition.resourceDict) {
+			if (key != "desert") {
+				for (var i = 0; i < this.mapDefinition.resourceDict[key]; i += 1) {
+					tileTypes.push(key);
+				}
+			}
+		}
+		
+		var newCoords = null;
+		var numDeserts = this.mapDefinition.resourceDict["desert"];
+		
+		for (var i = 0; i < numDeserts; i += 1) {
+			var desertHexTile = new HexTile();
+			newCoords = tileCoordinates.random(true);
+			desertHexTile.setCoordinate.apply(
+				desertHexTile,
+				newCoords
+			);
+			desertHexTile.setResourceType("desert");
+			this.hexTiles.push(desertHexTile);
+			this.coordToTile[newCoords.toString()] = desertHexTile;
+		}
+		
+		// Move all highly productive tile number (6 and 8) to the front
+		// of the tileNumbers array
+		var highlyProductiveIdx = [];
+		highlyProductiveIdx = highlyProductiveIdx.concat(
+			tileNumbers.indexOfArray(6),
+			tileNumbers.indexOfArray(8)
+		);
+		for (var i = 0; i < highlyProductiveIdx.length; i += 1) {
+			tileNumbers.swap(i,highlyProductiveIdx[i]);
+		}
+		
+		// Handle all other tiles
+		for (var i = 0; i < (numTiles - numDeserts); i += 1) {
+			
+			var newHexTile = new HexTile();
+			newHexTile.setNumber(tileNumbers[i]);
+			newHexTile.setResourceType(tileTypes.random(true));
+
+			var valid;
+			
+			if ( newHexTile.isHighlyProductive() ) {
+				var tmpCoords = [];
+				do {
+					newCoords = tileCoordinates.random(true);
+					newHexTile.setCoordinate.apply(
+						newHexTile,
+						newCoords
+					);
+					invalid = this.hasHighlyProductiveNeighbors(newHexTile);
+					if (invalid) {
+						tmpCoords.push(newCoords);
+					}
+				} while ( invalid );
+				tileCoordinates = tileCoordinates.concat(tmpCoords);
+			} else {
 				newCoords = tileCoordinates.random(true);
 				newHexTile.setCoordinate.apply(
 					newHexTile,
 					newCoords
 				);
-				invalid = this.hasHighlyProductiveNeighbors(newHexTile);
-				if (invalid) {
-					tmpCoords.push(newCoords);
-				}
-			} while ( invalid );
-			tileCoordinates = tileCoordinates.concat(tmpCoords);
-		} else {
-			newCoords = tileCoordinates.random(true);
-			newHexTile.setCoordinate.apply(
-				newHexTile,
-				newCoords
-			);
-		}
+			}
+			
+			this.hexTiles.push(newHexTile);
+			this.coordToTile[newCoords.toString()] = newHexTile;
+		} // end for loop
 		
-		this.hexTiles.push(newHexTile);
-		this.coordToTile[newCoords.toString()] = newHexTile;
-
+	} else {
+		console.log("No map definition.");
 	}
 	
 }
 CatanMap.prototype.draw = function() {
-	
-	for (var i = 0; i < this.hexTiles.length; i += 1) {
-		this.hexTiles[i].draw();
+
+	if (this.hexTiles) {
+		for (var i = 0; i < this.hexTiles.length; i += 1) {
+			this.hexTiles[i].draw();
+		}
 	}
 	
 }
@@ -272,12 +384,12 @@ HexTile.prototype.setNumber = function(number) {
 	this.number = number;
 }
 HexTile.prototype.setCoordinate = function(x,y) {
-	this.xCenter = canvasCenterX + dx*x;
-	this.yCenter = canvasCenterY + dy*y;
 	this.gridX = x;
 	this.gridY = y;
 }
 HexTile.prototype.draw = function() {
+	this.xCenter = canvasCenterX + dx*this.gridX;
+	this.yCenter = canvasCenterY + dy*this.gridY;
 	
 	this.drawBase();
 	// Don't draw number if desert
