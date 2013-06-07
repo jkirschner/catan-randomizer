@@ -85,8 +85,8 @@ normalMap.coordinatesArray = [
 	[4,2],[4,0],[4,-2]
 ];
 
-var extendedMap = new MapDefinition();
-extendedMap.resourceDict = {
+var expandedMap = new MapDefinition();
+expandedMap.resourceDict = {
 	"desert": 2,
 	"wood": 6,
 	"clay": 5,
@@ -94,7 +94,7 @@ extendedMap.resourceDict = {
 	"grain": 6,
 	"ore": 5
 }
-extendedMap.numberDict = {
+expandedMap.numberDict = {
 	2: 2,
 	3: 3,
 	4: 3,
@@ -106,7 +106,7 @@ extendedMap.numberDict = {
 	11: 3,
 	12: 2
 }
-extendedMap.coordinatesArray = [
+expandedMap.coordinatesArray = [
 	[-6,2],[-6,0],[-6,-2],
 	[-4,3],[-4,1],[-4,-1],[-4,-3],
 	[-2,4],[-2,2],[-2,0],[-2,-2],[-2,-4],
@@ -194,7 +194,16 @@ function loadImages(callback) {
 
 function generate() {
 	
-	catanMap.defineMap(extendedMap);
+	var mapDef;
+	switch($("input:radio['name=game-type']:checked").val()) {
+		case "expanded":
+			mapDef = expandedMap;
+			break;
+		default:
+			mapDef = normalMap;
+	}
+	
+	catanMap.defineMap(mapDef);
 	catanMap.generate();
 	catanMap.resize();
 	catanMap.draw();
@@ -355,6 +364,7 @@ CatanMap.prototype.generate = function() {
 CatanMap.prototype.draw = function() {
 
 	if (this.hexTiles) {
+		drawingContext.clear();
 		for (var i = 0; i < this.hexTiles.length; i += 1) {
 			this.hexTiles[i].draw();
 		}
@@ -581,3 +591,18 @@ function sizeCanvas() {
 	canvasCenterY = mapCanvas.height/2;
 	canvasCenterX = mapCanvas.width/2;
 }
+
+// http://stackoverflow.com/questions/2142535/how-to-clear-the-canvas-for-redrawing
+CanvasRenderingContext2D.prototype.clear = 
+  CanvasRenderingContext2D.prototype.clear || function (preserveTransform) {
+    if (preserveTransform) {
+      this.save();
+      this.setTransform(1, 0, 0, 1, 0, 0);
+    }
+
+    this.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    if (preserveTransform) {
+      this.restore();
+    }           
+};
