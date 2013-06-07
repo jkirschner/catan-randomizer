@@ -475,16 +475,16 @@ HexTile.prototype.drawBase = function() {
 	// Begin Path and start at top of hexagon
 	drawingContext.beginPath();
 	drawingContext.moveTo (
-		this.xCenter + this.size * Math.sin(angleOffset),
-		this.yCenter - this.size * Math.cos(angleOffset)
+		this.xCenter + size * Math.sin(angleOffset),
+		this.yCenter - size * Math.cos(angleOffset)
 	);
 	// Move clockwise and draw hexagon
 	var newAngle;
 	for (var i = 1; i <= 6; i += 1) {
 		newAngle = i * Math.PI / 3;
 		drawingContext.lineTo (
-			this.xCenter + this.size * Math.sin(newAngle + angleOffset),
-			this.yCenter - this.size * Math.cos(newAngle + angleOffset)
+			this.xCenter + size * Math.sin(newAngle + angleOffset),
+			this.yCenter - size * Math.cos(newAngle + angleOffset)
 		);
 	}
 	drawingContext.closePath();
@@ -502,9 +502,10 @@ HexTile.prototype.drawBase = function() {
 			2*dy
 		);
 		
+	} else {
+		drawingContext.fill();
 	}
 	
-	drawingContext.fill();
 	drawingContext.stroke();
 	
 }
