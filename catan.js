@@ -1,6 +1,6 @@
 // ----- Canvas globals -----
 
-var maincanvas;
+var mapCanvas;
 var drawingContext;
 
 var canvasCenterX;
@@ -10,7 +10,7 @@ var canvasCenterY;
 
 var mapStyle = "retro";
 
-var size = 80;
+var size = 70;
 var defaultFillStyle = "#ffffff";
 var strokeStyle = "#000000";
 var lineWidth = 3;
@@ -64,11 +64,16 @@ function preloadImages(arr, callback){
 
 }
 
-function init_test() {
+function init() {
 
-	/*var canvas = document.createElement("canvas");
-	canvas.id = "map-canvas";
-	document.getElementById('map-container').appendChild(canvas); */
+	loadImages(function() {
+		var button = $('button#gen-map-button')[0];
+		$(button).click(generate);
+		button.disabled = false;
+		button.innerHTML = "Click to generate.";
+	});
+	
+	addCanvas();
 	
 }
 
@@ -103,18 +108,15 @@ function loadImages(callback) {
 }
 
 // Initialize page.
-function init() {
+function generate() {
 	
-	// Load necessary image resources.
-	loadImages(function() {
-		// Get canvas context and re-size canvas.
-		maincanvas = $('#map-canvas')[0];
-		drawingContext = maincanvas.getContext('2d');
-		//resizeCanvas();
-		
-		var cm = new CatanMap();
+	var cm = new CatanMap();
+	cm.draw();
+	
+	window.onresize = function(event) {
+		sizeCanvas();
 		cm.draw();
-	});
+	}
 	
 }
 
@@ -276,6 +278,7 @@ HexTile.prototype.setCoordinate = function(x,y) {
 	this.gridY = y;
 }
 HexTile.prototype.draw = function() {
+	
 	this.drawBase();
 	// Don't draw number if desert
 	if (this.number) {
@@ -395,12 +398,23 @@ Array.prototype.swap = function(idx1, idx2) {
 	this[idx2] = tmp;
 }
 
-function resizeCanvas()
-{
-	//$(maincanvas).attr("width", 600);
-	//$(maincanvas).attr("height", 400);
-	$(maincanvas).attr("width", $(window).width());
-	$(maincanvas).attr("height", $(window).height());
-	canvasCenterY = maincanvas.height/2;
-	canvasCenterX = maincanvas.width/2;
+function addCanvas() {
+	//$(mapCanvas).attr("width", 600);
+	//$(mapCanvas).attr("height", 400);
+	mapCanvas = document.createElement("canvas");
+	drawingContext = mapCanvas.getContext('2d');
+	mapCanvas.id = "map-canvas";
+	
+	sizeCanvas();
+	
+	document.getElementById("map-container").appendChild(mapCanvas);
+	
+}
+
+function sizeCanvas() {
+	var mapContainer = $("div#map-container")[0];
+	$(mapCanvas).attr("width", $(mapContainer).width());
+	$(mapCanvas).attr("height", $(mapContainer).height());
+	canvasCenterY = mapCanvas.height/2;
+	canvasCenterX = mapCanvas.width/2;
 }
