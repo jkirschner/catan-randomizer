@@ -282,7 +282,7 @@ CatanMap.prototype.generate = function() {
 		var tileNumbers = [];
 		for (var key in this.mapDefinition.numberDict) {
 			for (var i = 0; i < this.mapDefinition.numberDict[key]; i += 1) {
-				tileNumbers.push(key);
+				tileNumbers.push(parseInt(key));
 			}
 		}
 		
@@ -328,7 +328,7 @@ CatanMap.prototype.generate = function() {
 			newHexTile.setNumber(tileNumbers[i]);
 			newHexTile.setResourceType(tileTypes.random(true));
 
-			var valid;
+			var invalid;
 			
 			if ( newHexTile.isHighlyProductive() ) {
 				var tmpCoords = [];
