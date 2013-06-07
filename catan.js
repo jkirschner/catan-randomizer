@@ -10,7 +10,7 @@ var canvasCenterY;
 
 var mapStyle = "retro";
 
-var size = 70;
+var size = null;
 var defaultFillStyle = "#ffffff";
 var strokeStyle = "#000000";
 var lineWidth = 3;
@@ -38,6 +38,19 @@ var resourceTypeToImageCanvas = {
 
 var dx = size * (1 + Math.cos(Math.PI/3)) / 2;
 var dy = size * Math.sin(Math.PI/3);
+
+/*
+ * Formula:
+ * 
+ * Height = (coordSpacing + 2) * dy
+ *        = (coordSpacing + 2) * Math.sin(Math.PI/3) * size
+ * Size = Height / ( (coordSpacing + 2) * Math.sin(Math.PI/3) )
+ * 
+ * Width = (coordSpacing * dx) + (2 * size)
+ *       = (coordSpacing * (1 + Math.cos(Math.PI/3)) / 2 * size) + (2 * size)
+ *       = ( (coordSpacing * (1 + Math.cos(Math.PI/3)) / 2) + 2 ) * size
+ * Size = Width / ( (coordSpacing * (1 + Math.cos(Math.PI/3)) / 2) + 2 )
+*/
 
 // ----- Map definition globals -----
 
@@ -107,6 +120,7 @@ extendedMap.coordinatesArray = [
 
 window.onresize = function(event) {
 	sizeCanvas();
+	catanMap.resize();
 	catanMap.draw();
 }
 
@@ -182,6 +196,7 @@ function generate() {
 	
 	catanMap.defineMap(extendedMap);
 	catanMap.generate();
+	catanMap.resize();
 	catanMap.draw();
 	
 }
@@ -212,11 +227,35 @@ function CatanMap() {
 	this.mapDefinition = null;
 	this.hexTiles = null;
 	this.coordToTile = {};
+	this.coordSpan = [0,0];
 	
 }
 CatanMap.prototype.defineMap = function(mapDefinition) {
+	
 	if (mapDefinition.checkValidity()) {
+		
 		this.mapDefinition = mapDefinition;
+		
+		var coordRangeX = [0,0];
+		var coordRangeY = [0,0];
+		
+		for (var i = 0; i < mapDefinition.coordinatesArray.length; i += 1) {
+			var coord = mapDefinition.coordinatesArray[i];
+			coordRangeX = [
+				Math.min(coordRangeX[0], coord[0]),
+				Math.max(coordRangeX[1], coord[0])
+			];
+			coordRangeY = [
+				Math.min(coordRangeY[0], coord[1]),
+				Math.max(coordRangeY[1], coord[1])
+			];
+		}
+		
+		this.coordSpan = [
+			coordRangeX[1] - coordRangeX[0],
+			coordRangeY[1] - coordRangeY[0]
+		];
+		
 	} else {
 		console.log("Invalid map definition.");
 	}
@@ -321,6 +360,18 @@ CatanMap.prototype.draw = function() {
 		}
 	}
 	
+}
+CatanMap.prototype.resize = function() {
+/* Size = Height / ( (coordSpacing + 2) * Math.sin(Math.PI/3) )
+ * Size = Width / ( (coordSpacing * (1 + Math.cos(Math.PI/3)) / 2) + 2 )
+*/
+	var wSize = mapCanvas.width / 
+		( (this.coordSpan[0] * (1 + Math.cos(Math.PI/3)) / 2) + 2 );
+	var hSize = mapCanvas.height / 
+		( (this.coordSpan[1] + 2) * Math.sin(Math.PI/3) );
+	size = Math.floor(Math.min(wSize, hSize));
+	dx = size * (1 + Math.cos(Math.PI/3)) / 2;
+	dy = size * Math.sin(Math.PI/3);
 }
 CatanMap.prototype.getAdjacentTiles = function(tile) {
 	
@@ -448,20 +499,20 @@ HexTile.prototype.drawBase = function() {
 	
 }
 HexTile.prototype.drawNumber = function() {
-
+	
 	drawingContext.fillStyle = "#FFFFFF";
 	drawingContext.strokeStyle = "#000000";
 	drawingContext.lineWidth = 3;
 	
 	drawingContext.beginPath();
-	drawingContext.arc(this.xCenter, this.yCenter, 0.375 * this.size,
+	drawingContext.arc(this.xCenter, this.yCenter, 0.375 * size,
 		0, 2 * Math.PI, false);
 	drawingContext.closePath();
 	
 	drawingContext.fill();
 	drawingContext.stroke();
 	
-	var fontSizePt = Math.ceil(30/40*(.45*this.size-8)+6);
+	var fontSizePt = Math.ceil(30/40*(.45*size-8)+6);
 	
 	drawingContext.font = "bold " + fontSizePt + "pt sans-serif";
 	drawingContext.textAlign = "center";
