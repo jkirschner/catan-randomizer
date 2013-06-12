@@ -375,9 +375,9 @@ CatanMap.prototype.resize = function() {
 /* Size = Height / ( (coordSpacing + 2) * Math.sin(Math.PI/3) )
  * Size = Width / ( (coordSpacing * (1 + Math.cos(Math.PI/3)) / 2) + 2 )
 */
-	var wSize = mapCanvas.width / 
+	var wSize = (mapCanvas.width-10) / 
 		( (this.coordSpan[0] * (1 + Math.cos(Math.PI/3)) / 2) + 2 );
-	var hSize = mapCanvas.height / 
+	var hSize = (mapCanvas.height-10) / 
 		( (this.coordSpan[1] + 2) * Math.sin(Math.PI/3) );
 	size = Math.floor(Math.min(wSize, hSize));
 	dx = size * (1 + Math.cos(Math.PI/3)) / 2;
