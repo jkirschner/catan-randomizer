@@ -62,7 +62,15 @@
         },
         methods: {
           dummy() {
-            console.log("created!")
+            Amplify.API.graphql(Amplify.graphqlOperation(`query
+              someDummyQuery {
+                someDummyQuery{
+                  id
+                  name
+                }
+              }`, {})).then((data) => {
+                this.somelist = data.data.someDummyQuery
+              })
           }
         },
         created() {
