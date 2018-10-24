@@ -35,6 +35,8 @@
       </div>
     </div>
   </div>
+  <div id="somelist">
+  </div>
   <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
   <script src="https://unpkg.com/aws-amplify@1.1.3/dist/aws-amplify.js"></script>
   <script>
@@ -51,6 +53,22 @@
         aws_appsync_graphqlEndpoint: "",
         aws_appsync_region: "us-east-1",
       });
+      const app = new Vue({
+        el: "#somelist",
+        data() {
+          return {
+            somelist: []
+          }
+        },
+        methods: {
+          dummy() {
+            console.log("created!")
+          }
+        },
+        created() {
+          this.dummy()
+        }
+      })
     })
   </script>
 </body>
