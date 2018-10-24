@@ -1,0 +1,55 @@
+service: ${${self:custom.env}.SERVICE_NAME}
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  stage: ${self:custom.stage}
+  region: us-east-1
+  role: ${${self:custom.env}.ROLE_ARN}
+  environment: ${file(./serverless.env.yml):${self:custom.stage}}
+  profile: ${${self:custom.env}.AWS_PROFILE}
+  versionFunctions: false
+
+plugins:
+  - serverless-domain-manager
+  - serverless-offline
+  - serverless-apigw-binary
+  - serverless-plugin-typescript
+  - serverless-appsync-plugin
+
+custom:
+  webpackIncludeModules: true
+  service: ${opt:service, ''}
+  stage: ${opt:stage, 'development'}
+  src: ${opt:src, 'src'}
+  env: file(./serverless.env.yml):${self:custom.stage}
+  accountId: ${${self:custom.env}.ACCOUNT_ID}
+  customDomain:
+    domainName: ${${self:custom.env}.DOMAIN_NAME}
+    basePath: ""
+    stage: ${self:provider.stage}
+    createRoute53Record: true
+  apigwBinary:
+    types:
+      - "*/*"
+package:
+  include:
+    - src/public/**
+functions:
+  appSyncDataSource:
+    handler: ${self:custom.src}/appSync.handler
+    timeout: 30
+    reservedConcurrency: 10
+    events:
+      - http:
+          path: /appsync
+          method: post
+          cors: true
+  preSignUp:
+    handler: ${self:custom.src}/user.preSignUp
+  app:
+    handler: ${self:custom.src}/express.handler
+    timeout: 30
+    events:
+      - http: ANY /
+      - http: "ANY {proxy+}"
