@@ -1,0 +1,1 @@
+AWS_PROFILE=someprofile serverless deploy --stage production -t
