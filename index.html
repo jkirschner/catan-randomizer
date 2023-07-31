@@ -1,42 +1,62 @@
 <!DOCTYPE html>
 
 <head>
-	<title>Catan Randomizer</title>
-	<link rel="stylesheet" href="css/stylesheet.css" type="text/css">  
-	<script src="jquery.min.js" type="text/javascript"></script>
-	<script type="text/javascript" language="javascript">
-		$(document).ready(function() {
-			init();
-		});
-	</script>
-	<script src="catan.js" type="text/javascript"></script>
+    <title>Catan Randomizer</title>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="css/stylesheet.css" type="text/css">
 </head>
 
 <body>
-	<div id="content-wrapper">
-		<div id="content-left">
-		
-			<h1 id="title">Catan Map Generator</h1>
-			<h4>By <a href="http://www.jaredkirschner.com">Jared Kirschner</a></h4>
-			
-			<div id="gen-options">
-				<div>
-					<span><b>Please select game type:</b></span><br>
-					<input type="radio" name="game-type" value="normal" checked>Normal (1-4 players)<br>
-					<input type="radio" name="game-type" value="expanded">Expansion (5-6 players)<br>
-				</div>
-			</div>
-			
-			<button id="gen-map-button" type="button" disabled="true">
-				Loading resources...
-			</button>
-		
-		</div>
-		<div id="content-right">
-			<div id="map-container">
-			</div>
-		</div>
-	</div>
+
+    <div class="col-sm-3">
+        <h1 class="text-center">Catan Map Generator</h1>
+        <p class="text-center">Created by <a href="http://www.jaredkirschner.com">Jared Kirschner</a>. Modified by <a href="http://github.com/ragib06">Ragib Ahsan</a> and <a href="http://github.com/matheusfavieira">Matheus Vieira</a></p>
+        <div class="panel panel-default">
+            <div class="panel-heading">Configurations:</div>
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <strong>Choose amount of players:</strong>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="game-type" value="normal" checked>
+                            Normal (1-4 players)
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="game-type" value="expanded">
+                            Expansion (5-6 players)
+                        </label>
+                    </div>
+                </li>
+                <li class="list-group-item">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="mapStyle" value="retro" checked>
+                            Use image lands.
+                        </label>
+                    </div>
+                </li>
+
+            </ul>
+        </div>
+
+        <button class="btn btn-sm btn-block btn-primary" id="gen-map-button" disabled>Loading lands...</button>
+    </div>
+
+    <div class="col-sm-9 map-container" id="map-container"></div>
+
+    <script src="//code.jquery.com/jquery-1.4.2.min.js" crossorigin="anonymous"></script>
+
+    <script src="catan.js" type="text/javascript"></script>
+    <script type="text/javascript" language="javascript">
+        $(document).ready(function() {
+            init();
+        });
+    </script>
 </body>
 
 </html>
